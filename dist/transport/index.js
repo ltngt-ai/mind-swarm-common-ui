@@ -1,7 +1,16 @@
 /**
- * Transport layer exports
+ * Transport exports
  */
-export * from './constants.js';
+// Base types and interfaces
+export * from './types.js';
+// Base transport implementation
+export { BaseTransport } from './BaseTransport.js';
+// WebSocket transport
+export { WebSocketTransport } from './WebSocketTransport.js';
+// Mail transport adapter
+export { MailTransportAdapter } from './MailTransportAdapter.js';
+// Legacy exports for backward compatibility
+export { MailQueue } from './MailQueue.js';
 export * from './mailTemplates.js';
-export * from './MailQueue.js';
+export * from './constants.js';
 //# sourceMappingURL=index.js.map
