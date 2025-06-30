@@ -2,7 +2,7 @@
 node_modules/
 
 # Build output
-dist/
+# dist/ - Commenting out to include built files for GitHub installs
 
 # TypeScript cache
 *.tsbuildinfo
