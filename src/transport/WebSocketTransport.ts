@@ -274,7 +274,7 @@ export class WebSocketTransport extends BaseTransport {
         messageText = data;
       } else if (data instanceof ArrayBuffer) {
         messageText = new TextDecoder().decode(data);
-      } else if (Buffer && Buffer.isBuffer(data)) {
+      } else if (typeof Buffer !== 'undefined' && Buffer.isBuffer(data)) {
         messageText = data.toString();
       } else {
         messageText = data.toString();
