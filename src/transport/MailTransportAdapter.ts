@@ -135,7 +135,11 @@ export class MailTransportAdapter extends WebSocketTransport implements IMailTra
         in_reply_to: message.in_reply_to,
         headers: {}
       };
+      this.log(`Emitting mail notification from ${mail.from_address}: ${mail.subject}`);
       this.emitMail(mail);
+    } else if (message.type === 'mail_sent') {
+      // Handle mail sent confirmation - just log it
+      this.log(`Mail sent confirmation: ${message.status?.status}`);
     } else if (message.type === 'identity_confirmed') {
       // Update user identity
       if (message.email_address) {

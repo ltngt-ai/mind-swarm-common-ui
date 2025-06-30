@@ -1,7 +1,7 @@
 /**
  * Base Transport Implementation
  */
-import { EventEmitter } from 'events';
+import { EventEmitter } from '../utils/EventEmitter.js';
 import { TransportEvent, TransportState } from './types.js';
 /**
  * Abstract base class for all transport implementations

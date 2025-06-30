@@ -2,7 +2,28 @@
  * WebSocket Transport Implementation
  */
 
-import WebSocket from 'ws';
+// Use native WebSocket in browser, ws library in Node.js
+const WebSocketImpl = (() => {
+  if (typeof window !== 'undefined' && window.WebSocket) {
+    // Browser environment
+    return window.WebSocket;
+  } else {
+    // Node.js environment
+    try {
+      return require('ws');
+    } catch (e) {
+      throw new Error('ws library not available in Node.js environment');
+    }
+  }
+})();
+
+// WebSocket constants (same in both environments)
+const WS_READY_STATE = {
+  CONNECTING: 0,
+  OPEN: 1,
+  CLOSING: 2,
+  CLOSED: 3
+};
 import { BaseTransport } from './BaseTransport.js';
 import { TransportEvent, TransportState } from './types.js';
 import type { 
@@ -22,7 +43,7 @@ export interface WebSocketTransportConfig extends TransportConfig {
  * WebSocket-based transport implementation
  */
 export class WebSocketTransport extends BaseTransport {
-  protected ws: WebSocket | null = null;
+  protected ws: any | null = null;
   protected reconnectAttempts = 0;
   protected reconnectTimer: NodeJS.Timeout | null = null;
   protected heartbeatTimer: NodeJS.Timeout | null = null;
@@ -75,8 +96,11 @@ export class WebSocketTransport extends BaseTransport {
     this.pendingRequests.clear();
 
     if (this.ws) {
-      this.ws.removeAllListeners();
-      if (this.ws.readyState === WebSocket.OPEN) {
+      // Remove listeners (Node.js ws has removeAllListeners, browser doesn't)
+      if (typeof window === 'undefined' && this.ws.removeAllListeners) {
+        this.ws.removeAllListeners();
+      }
+      if (this.ws.readyState === WS_READY_STATE.OPEN) {
         this.ws.close(1000, 'Client disconnect');
       }
       this.ws = null;
@@ -136,9 +160,17 @@ export class WebSocketTransport extends BaseTransport {
       try {
         this.log(`Connecting to ${config.url}`);
         
-        this.ws = new WebSocket(config.url, config.protocols, {
-          headers: config.headers
-        });
+        // Browser WebSocket constructor: new WebSocket(url, protocols)
+        // Node.js ws constructor: new WebSocket(url, protocols, options)
+        if (typeof window !== 'undefined') {
+          // Browser environment - no options parameter
+          this.ws = new WebSocketImpl(config.url, config.protocols);
+        } else {
+          // Node.js environment - can pass options
+          this.ws = new WebSocketImpl(config.url, config.protocols, {
+            headers: config.headers
+          });
+        }
 
         const connectTimeout = setTimeout(() => {
           if (this.ws) {
@@ -147,42 +179,83 @@ export class WebSocketTransport extends BaseTransport {
           reject(new Error('Connection timeout'));
         }, this.config.timeout || 30000);
 
-        this.ws.on('open', () => {
-          clearTimeout(connectTimeout);
-          this.log('Connected');
-          this.setState(TransportState.CONNECTED);
-          this.reconnectAttempts = 0;
-          this.startHeartbeat();
-          this.emit(TransportEvent.CONNECTED);
-          resolve();
-        });
+        // Handle events differently for browser vs Node.js
+        if (typeof window !== 'undefined') {
+          // Browser WebSocket events
+          this.ws.addEventListener('open', () => {
+            clearTimeout(connectTimeout);
+            this.log('Connected');
+            this.setState(TransportState.CONNECTED);
+            this.reconnectAttempts = 0;
+            this.startHeartbeat();
+            this.emit(TransportEvent.CONNECTED);
+            resolve();
+          });
 
-        this.ws.on('close', (code: number, reason: Buffer) => {
-          clearTimeout(connectTimeout);
-          this.log(`Connection closed: ${code} - ${reason}`);
-          this.handleDisconnect();
-        });
+          this.ws.addEventListener('close', (event: CloseEvent) => {
+            clearTimeout(connectTimeout);
+            this.log(`Connection closed: ${event.code} - ${event.reason}`);
+            this.handleDisconnect();
+          });
 
-        this.ws.on('error', (error: Error) => {
-          clearTimeout(connectTimeout);
-          this.logError('WebSocket error:', error);
-          this.emit(TransportEvent.ERROR, error);
-          
-          if (this.state === TransportState.CONNECTING) {
-            reject(error);
-          }
-        });
+          this.ws.addEventListener('error', (error: Event) => {
+            clearTimeout(connectTimeout);
+            this.logError('WebSocket error:', error);
+            this.emit(TransportEvent.ERROR, error);
+            
+            if (this.state === TransportState.CONNECTING) {
+              reject(new Error('WebSocket connection failed'));
+            }
+          });
+        } else {
+          // Node.js ws events
+          this.ws.on('open', () => {
+            clearTimeout(connectTimeout);
+            this.log('Connected');
+            this.setState(TransportState.CONNECTED);
+            this.reconnectAttempts = 0;
+            this.startHeartbeat();
+            this.emit(TransportEvent.CONNECTED);
+            resolve();
+          });
 
-        this.ws.on('message', (data: WebSocket.Data) => {
-          this.handleMessage(data);
-        });
+          this.ws.on('close', (code: number, reason: Buffer) => {
+            clearTimeout(connectTimeout);
+            this.log(`Connection closed: ${code} - ${reason}`);
+            this.handleDisconnect();
+          });
 
-        this.ws.on('ping', () => {
-          this.log('Received ping');
-          if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-            this.ws.pong();
-          }
-        });
+          this.ws.on('error', (error: Error) => {
+            clearTimeout(connectTimeout);
+            this.logError('WebSocket error:', error);
+            this.emit(TransportEvent.ERROR, error);
+            
+            if (this.state === TransportState.CONNECTING) {
+              reject(error);
+            }
+          });
+        }
+
+        // Handle message events differently for browser vs Node.js
+        if (typeof window !== 'undefined') {
+          // Browser WebSocket uses 'message' event with MessageEvent
+          this.ws.addEventListener('message', (event: MessageEvent) => {
+            this.handleMessage(event.data);
+          });
+        } else {
+          // Node.js ws uses 'message' event with raw data
+          this.ws.on('message', (data: any) => {
+            this.handleMessage(data);
+          });
+
+          // Ping/pong is only available in Node.js ws
+          this.ws.on('ping', () => {
+            this.log('Received ping');
+            if (this.ws && this.ws.readyState === WS_READY_STATE.OPEN) {
+              this.ws.pong();
+            }
+          });
+        }
 
       } catch (error) {
         reject(error);
@@ -193,9 +266,21 @@ export class WebSocketTransport extends BaseTransport {
   /**
    * Handle incoming messages
    */
-  protected handleMessage(data: WebSocket.Data): void {
+  protected handleMessage(data: any): void {
     try {
-      const message = JSON.parse(data.toString());
+      // Handle different data types from browser vs Node.js
+      let messageText: string;
+      if (typeof data === 'string') {
+        messageText = data;
+      } else if (data instanceof ArrayBuffer) {
+        messageText = new TextDecoder().decode(data);
+      } else if (Buffer && Buffer.isBuffer(data)) {
+        messageText = data.toString();
+      } else {
+        messageText = data.toString();
+      }
+      
+      const message = JSON.parse(messageText);
       this.log('Received message:', JSON.stringify(message).substring(0, 200));
 
       // Check if this is a response to a pending request
@@ -276,8 +361,14 @@ export class WebSocketTransport extends BaseTransport {
     const interval = config.heartbeatInterval || 30000;
 
     this.heartbeatTimer = setInterval(() => {
-      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-        this.ws.ping();
+      if (this.ws && this.ws.readyState === WS_READY_STATE.OPEN) {
+        if (typeof window !== 'undefined') {
+          // Browser: Send a heartbeat message instead of ping
+          this.ws.send(JSON.stringify({ type: 'heartbeat', timestamp: Date.now() }));
+        } else {
+          // Node.js: Use ping/pong
+          this.ws.ping();
+        }
       }
     }, interval);
   }
