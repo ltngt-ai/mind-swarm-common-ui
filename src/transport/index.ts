@@ -18,5 +18,6 @@ export type { MailTransportConfig } from './MailTransportAdapter.js';
 
 // Legacy exports for backward compatibility
 export { MailQueue } from './MailQueue.js';
+export type { QueuedMail, MailQueueConfig } from './MailQueue.js';
 export * from './mailTemplates.js';
 export * from './constants.js';

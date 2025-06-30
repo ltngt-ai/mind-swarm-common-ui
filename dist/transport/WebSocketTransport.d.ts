@@ -1,7 +1,6 @@
 /**
  * WebSocket Transport Implementation
  */
-import WebSocket from 'ws';
 import { BaseTransport } from './BaseTransport.js';
 import type { TransportConfig, TransportMessage, TransportResponse } from './types.js';
 export interface WebSocketTransportConfig extends TransportConfig {
@@ -14,7 +13,7 @@ export interface WebSocketTransportConfig extends TransportConfig {
  * WebSocket-based transport implementation
  */
 export declare class WebSocketTransport extends BaseTransport {
-    protected ws: WebSocket | null;
+    protected ws: any | null;
     protected reconnectAttempts: number;
     protected reconnectTimer: NodeJS.Timeout | null;
     protected heartbeatTimer: NodeJS.Timeout | null;
@@ -43,7 +42,7 @@ export declare class WebSocketTransport extends BaseTransport {
     /**
      * Handle incoming messages
      */
-    protected handleMessage(data: WebSocket.Data): void;
+    protected handleMessage(data: any): void;
     /**
      * Handle disconnection
      */
