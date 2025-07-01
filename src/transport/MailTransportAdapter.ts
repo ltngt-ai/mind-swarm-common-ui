@@ -43,6 +43,9 @@ export class MailTransportAdapter extends WebSocketTransport implements IMailTra
    * Send mail and wait for response
    */
   async sendMail(mail: Mail): Promise<Mail> {
+    // Debug log the incoming mail
+    this.log(`sendMail called with subject: "${mail.subject}", to: ${mail.to_address}`);
+    
     // Server expects this exact format
     const message = {
       type: 'mail',
