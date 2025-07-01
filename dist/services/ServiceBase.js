@@ -190,7 +190,10 @@ export class ServiceBase {
         const { createProjectCreatorAgentRequest } = await import('../transport/mailTemplates.js');
         const response = await this.sendToUiAgent('Create Project Creator Agent', createProjectCreatorAgentRequest(projectDetails), { expectSubject: 'Agent Created Response' });
         const data = this.parseResponse(response);
-        return { agent_id: data?.agent_id || '' };
+        if (!data?.agent_id) {
+            throw new Error('Failed to create project creator agent: agent_id is missing in the response');
+        }
+        return { agent_id: data.agent_id };
     }
     /**
      * Delete a project

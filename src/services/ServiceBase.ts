@@ -255,7 +255,10 @@ export abstract class ServiceBase {
       { expectSubject: 'Agent Created Response' }
     );
     const data = this.parseResponse<{ agent_id: string }>(response);
-    return { agent_id: data?.agent_id || '' };
+    if (!data?.agent_id) {
+      throw new Error('Failed to create project creator agent: agent_id is missing in the response');
+    }
+    return { agent_id: data.agent_id };
   }
 
   /**
