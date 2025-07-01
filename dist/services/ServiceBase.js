@@ -182,6 +182,17 @@ export class ServiceBase {
         await this.transport.sendMailTo(this.uiAgentEmail, 'Create Project', initiateProjectCreation());
     }
     /**
+     * Create a project creator agent with specific details
+     * This allows direct project creation without interactive conversation
+     */
+    async createProjectCreatorAgent(projectDetails) {
+        await this.ensureUiAgent();
+        const { createProjectCreatorAgentRequest } = await import('../transport/mailTemplates.js');
+        const response = await this.sendToUiAgent('Create Project Creator Agent', createProjectCreatorAgentRequest(projectDetails), { expectSubject: 'Agent Created Response' });
+        const data = this.parseResponse(response);
+        return { agent_id: data?.agent_id || '' };
+    }
+    /**
      * Delete a project
      */
     async deleteProject(projectId, projectName) {

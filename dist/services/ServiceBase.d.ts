@@ -81,6 +81,13 @@ export declare abstract class ServiceBase {
      */
     initiateProjectCreation(): Promise<void>;
     /**
+     * Create a project creator agent with specific details
+     * This allows direct project creation without interactive conversation
+     */
+    createProjectCreatorAgent(projectDetails: string): Promise<{
+        agent_id: string;
+    }>;
+    /**
      * Delete a project
      */
     deleteProject(projectId: string, projectName: string): Promise<boolean>;

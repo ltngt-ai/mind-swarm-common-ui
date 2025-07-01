@@ -131,6 +131,19 @@ export const createProjectRequest = (name, description) => `I want to work on a 
 
 Please help me set this up.`;
 /**
+ * Create project creator agent request with specific details
+ */
+export const createProjectCreatorAgentRequest = (projectDetails) => `Please create a project_creator agent and send them the following project details:
+
+${projectDetails}
+
+Reply with subject "Agent Created Response" in the following JSON format:
+{
+  "success": true,
+  "agent_id": "project_creator_xxxxx",
+  "message": "Project creator agent created and instructed"
+}`;
+/**
  * Chat subject templates
  */
 export const chatSubject = {
