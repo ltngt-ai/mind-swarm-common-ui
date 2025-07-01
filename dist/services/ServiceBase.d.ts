@@ -77,13 +77,21 @@ export declare abstract class ServiceBase {
      */
     listProjects(): Promise<any[]>;
     /**
-     * Create a new project
+     * Initiate project creation conversation
      */
-    createProject(name: string, description?: string): Promise<any>;
+    initiateProjectCreation(): Promise<void>;
     /**
      * Delete a project
      */
     deleteProject(projectId: string, projectName: string): Promise<boolean>;
+    /**
+     * Detach a project (removes .mind-swarm folder only)
+     */
+    detachProject(projectId: string, projectName: string): Promise<boolean>;
+    /**
+     * Get project details
+     */
+    getProject(projectId: string): Promise<any>;
     /**
      * List agents (optionally filtered by project)
      */
@@ -92,6 +100,14 @@ export declare abstract class ServiceBase {
      * List tasks (optionally filtered by project)
      */
     listTasks(projectId?: string): Promise<any[]>;
+    /**
+     * Get agent details
+     */
+    getAgent(agentId: string): Promise<any>;
+    /**
+     * Get task details
+     */
+    getTask(taskId: string): Promise<any>;
     /**
      * Get UI agent email
      */

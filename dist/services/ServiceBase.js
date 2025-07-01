@@ -57,7 +57,7 @@ export class ServiceBase {
             if (error instanceof Error && error.message.includes('Not authenticated')) {
                 throw error;
             }
-            throw new Error('Not authenticated. Please run "mindswarm auth login" to authenticate.');
+            throw new Error('Not authenticated. Please run "mind-swarm auth login" to authenticate.');
         }
         // Update UI agent email if transport has it
         const transportUiEmail = this.transport.getUiAgentEmail();
@@ -65,7 +65,7 @@ export class ServiceBase {
             this.uiAgentEmail = transportUiEmail;
         }
         else {
-            throw new Error('Not authenticated. Please run "mindswarm auth login" to authenticate.');
+            throw new Error('Not authenticated. Please run "mind-swarm auth login" to authenticate.');
         }
     }
     /**
@@ -172,16 +172,14 @@ export class ServiceBase {
         return data?.projects || [];
     }
     /**
-     * Create a new project
+     * Initiate project creation conversation
      */
-    async createProject(name, description) {
-        const { createProjectRequest } = await import('../transport/mailTemplates.js');
-        const response = await this.sendToUiAgent('Create Project', createProjectRequest(name, description), { expectSubject: 'Project Created Response' });
-        const data = this.parseResponse(response);
-        if (!data?.project) {
-            throw new Error('Failed to create project');
-        }
-        return data.project;
+    async initiateProjectCreation() {
+        await this.ensureUiAgent();
+        const { initiateProjectCreation } = await import('../transport/mailTemplates.js');
+        // Just send the request, don't wait for response
+        // The project_creator agent will start sending messages directly
+        await this.transport.sendMailTo(this.uiAgentEmail, 'Create Project', initiateProjectCreation());
     }
     /**
      * Delete a project
@@ -191,6 +189,23 @@ export class ServiceBase {
         const template = deleteProjectRequest(projectId, projectName);
         const response = await this.sendToUiAgent(template.subject, template.body, { expectSubject: 'Project Deleted Response' });
         return this.isSuccessResponse(response);
+    }
+    /**
+     * Detach a project (removes .mind-swarm folder only)
+     */
+    async detachProject(projectId, projectName) {
+        const { detachProjectRequest } = await import('../transport/mailTemplates.js');
+        const template = detachProjectRequest(projectId, projectName);
+        const response = await this.sendToUiAgent(template.subject, template.body, { expectSubject: 'Project Detached Response' });
+        return this.isSuccessResponse(response);
+    }
+    /**
+     * Get project details
+     */
+    async getProject(projectId) {
+        const response = await this.sendToUiAgent(`Get Project: ${projectId}`, `Please provide details for project ${projectId}`, { expectSubject: 'Project Details Response' });
+        const data = this.parseResponse(response);
+        return data?.project || null;
     }
     /**
      * List agents (optionally filtered by project)
@@ -209,6 +224,22 @@ export class ServiceBase {
         const response = await this.sendToUiAgent(projectId ? `List Tasks for Project: ${projectId}` : 'List All Tasks', projectId ? listTasksRequest(projectId) : listAllTasksRequest(), { expectSubject: 'Task List Response' });
         const data = this.parseResponse(response);
         return data?.tasks || [];
+    }
+    /**
+     * Get agent details
+     */
+    async getAgent(agentId) {
+        const response = await this.sendToUiAgent(`Get Agent: ${agentId}`, `Please provide details for agent ${agentId}`, { expectSubject: 'Agent Details Response' });
+        const data = this.parseResponse(response);
+        return data?.agent || null;
+    }
+    /**
+     * Get task details
+     */
+    async getTask(taskId) {
+        const response = await this.sendToUiAgent(`Get Task: ${taskId}`, `Please provide details for task ${taskId}`, { expectSubject: 'Task Details Response' });
+        const data = this.parseResponse(response);
+        return data?.task || null;
     }
     /**
      * Get UI agent email

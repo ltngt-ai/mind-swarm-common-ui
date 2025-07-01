@@ -228,20 +228,18 @@ export abstract class ServiceBase {
   }
 
   /**
-   * Create a new project
+   * Initiate project creation conversation
    */
-  async createProject(name: string, description?: string): Promise<any> {
-    const { createProjectRequest } = await import('../transport/mailTemplates.js');
-    const response = await this.sendToUiAgent(
+  async initiateProjectCreation(): Promise<void> {
+    await this.ensureUiAgent();
+    const { initiateProjectCreation } = await import('../transport/mailTemplates.js');
+    // Just send the request, don't wait for response
+    // The project_creator agent will start sending messages directly
+    await this.transport.sendMailTo(
+      this.uiAgentEmail,
       'Create Project',
-      createProjectRequest(name, description),
-      { expectSubject: 'Project Created Response' }
+      initiateProjectCreation()
     );
-    const data = this.parseResponse<{ project: any }>(response);
-    if (!data?.project) {
-      throw new Error('Failed to create project');
-    }
-    return data.project;
   }
 
   /**

@@ -134,7 +134,10 @@ Project Name: ${projectName}`
  * Initiate project creation conversation
  */
 export const initiateProjectCreation = (): string => 
-  `I want to work on a new project`;
+  `I want to work on a new project.
+
+Please use the subject "Conversation" for all messages during our project creation dialog.
+When the project is successfully created, use the subject "Project Creation Complete".`;
 
 /**
  * Create project request

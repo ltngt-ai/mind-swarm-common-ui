@@ -27,6 +27,8 @@ export class MailTransportAdapter extends WebSocketTransport {
      * Send mail and wait for response
      */
     async sendMail(mail) {
+        // Debug log the incoming mail
+        this.log(`sendMail called with subject: "${mail.subject}", to: ${mail.to_address}`);
         // Server expects this exact format
         const message = {
             type: 'mail',
