@@ -152,22 +152,23 @@ export class WebSocketTransport extends BaseTransport {
   protected async createConnection(): Promise<void> {
     const config = this.config as WebSocketTransportConfig;
     
-    return new Promise(async (resolve, reject) => {
+    this.log(`Connecting to ${config.url}`);
+    
+    // Handle dynamic import for Node.js environment
+    if (typeof window === 'undefined' && !WebSocketImpl) {
+      const wsModule = await import('ws');
+      WebSocketImpl = wsModule.default;
+    }
+    
+    return new Promise((resolve, reject) => {
       try {
-        this.log(`Connecting to ${config.url}`);
-        
         // Browser WebSocket constructor: new WebSocket(url, protocols)
         // Node.js ws constructor: new WebSocket(url, protocols, options)
         if (typeof window !== 'undefined') {
           // Browser environment - no options parameter
           this.ws = new WebSocketImpl(config.url, config.protocols);
         } else {
-          // Node.js environment - load ws dynamically
-          if (!WebSocketImpl) {
-            const wsModule = await import('ws');
-            WebSocketImpl = wsModule.default;
-          }
-          // Can pass options in Node.js
+          // Node.js environment - Can pass options
           this.ws = new WebSocketImpl(config.url, config.protocols, {
             headers: config.headers
           });
