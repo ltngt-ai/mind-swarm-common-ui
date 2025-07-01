@@ -43,6 +43,10 @@ export declare const initiateProjectCreation: () => string;
  */
 export declare const createProjectRequest: (name: string, description?: string) => string;
 /**
+ * Create project creator agent request with specific details
+ */
+export declare const createProjectCreatorAgentRequest: (projectDetails: string) => string;
+/**
  * Chat subject templates
  */
 export declare const chatSubject: {

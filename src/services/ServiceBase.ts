@@ -243,6 +243,25 @@ export abstract class ServiceBase {
   }
 
   /**
+   * Create a project creator agent with specific details
+   * This allows direct project creation without interactive conversation
+   */
+  async createProjectCreatorAgent(projectDetails: string): Promise<{ agent_id: string }> {
+    await this.ensureUiAgent();
+    const { createProjectCreatorAgentRequest } = await import('../transport/mailTemplates.js');
+    const response = await this.sendToUiAgent(
+      'Create Project Creator Agent',
+      createProjectCreatorAgentRequest(projectDetails),
+      { expectSubject: 'Agent Created Response' }
+    );
+    const data = this.parseResponse<{ agent_id: string }>(response);
+    if (!data?.agent_id) {
+      throw new Error('Failed to create project creator agent: agent_id is missing in the response');
+    }
+    return { agent_id: data.agent_id };
+  }
+
+  /**
    * Delete a project
    */
   async deleteProject(projectId: string, projectName: string): Promise<boolean> {
