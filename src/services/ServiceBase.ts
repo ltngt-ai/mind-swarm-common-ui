@@ -72,7 +72,7 @@ export abstract class ServiceBase {
       if (error instanceof Error && error.message.includes('Not authenticated')) {
         throw error;
       }
-      throw new Error('Not authenticated. Please run "mindswarm auth login" to authenticate.');
+      throw new Error('Not authenticated. Please run "mind-swarm auth login" to authenticate.');
     }
 
     // Update UI agent email if transport has it
@@ -80,7 +80,7 @@ export abstract class ServiceBase {
     if (transportUiEmail) {
       this.uiAgentEmail = transportUiEmail;
     } else {
-      throw new Error('Not authenticated. Please run "mindswarm auth login" to authenticate.');
+      throw new Error('Not authenticated. Please run "mind-swarm auth login" to authenticate.');
     }
   }
 
@@ -228,20 +228,18 @@ export abstract class ServiceBase {
   }
 
   /**
-   * Create a new project
+   * Initiate project creation conversation
    */
-  async createProject(name: string, description?: string): Promise<any> {
-    const { createProjectRequest } = await import('../transport/mailTemplates.js');
-    const response = await this.sendToUiAgent(
+  async initiateProjectCreation(): Promise<void> {
+    await this.ensureUiAgent();
+    const { initiateProjectCreation } = await import('../transport/mailTemplates.js');
+    // Just send the request, don't wait for response
+    // The project_creator agent will start sending messages directly
+    await this.transport.sendMailTo(
+      this.uiAgentEmail,
       'Create Project',
-      createProjectRequest(name, description),
-      { expectSubject: 'Project Created Response' }
+      initiateProjectCreation()
     );
-    const data = this.parseResponse<{ project: any }>(response);
-    if (!data?.project) {
-      throw new Error('Failed to create project');
-    }
-    return data.project;
   }
 
   /**
@@ -256,6 +254,33 @@ export abstract class ServiceBase {
       { expectSubject: 'Project Deleted Response' }
     );
     return this.isSuccessResponse(response);
+  }
+
+  /**
+   * Detach a project (removes .mind-swarm folder only)
+   */
+  async detachProject(projectId: string, projectName: string): Promise<boolean> {
+    const { detachProjectRequest } = await import('../transport/mailTemplates.js');
+    const template = detachProjectRequest(projectId, projectName);
+    const response = await this.sendToUiAgent(
+      template.subject,
+      template.body,
+      { expectSubject: 'Project Detached Response' }
+    );
+    return this.isSuccessResponse(response);
+  }
+
+  /**
+   * Get project details
+   */
+  async getProject(projectId: string): Promise<any> {
+    const response = await this.sendToUiAgent(
+      `Get Project: ${projectId}`,
+      `Please provide details for project ${projectId}`,
+      { expectSubject: 'Project Details Response' }
+    );
+    const data = this.parseResponse<{ project: any }>(response);
+    return data?.project || null;
   }
 
   /**
@@ -284,6 +309,32 @@ export abstract class ServiceBase {
     );
     const data = this.parseResponse<{ tasks: any[] }>(response);
     return data?.tasks || [];
+  }
+
+  /**
+   * Get agent details
+   */
+  async getAgent(agentId: string): Promise<any> {
+    const response = await this.sendToUiAgent(
+      `Get Agent: ${agentId}`,
+      `Please provide details for agent ${agentId}`,
+      { expectSubject: 'Agent Details Response' }
+    );
+    const data = this.parseResponse<{ agent: any }>(response);
+    return data?.agent || null;
+  }
+
+  /**
+   * Get task details
+   */
+  async getTask(taskId: string): Promise<any> {
+    const response = await this.sendToUiAgent(
+      `Get Task: ${taskId}`,
+      `Please provide details for task ${taskId}`,
+      { expectSubject: 'Task Details Response' }
+    );
+    const data = this.parseResponse<{ task: any }>(response);
+    return data?.task || null;
   }
 
   /**

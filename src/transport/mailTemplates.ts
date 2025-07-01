@@ -93,7 +93,20 @@ export const listAgentsRequest = (scope?: { projectId?: string }): string => {
  */
 export const deleteProjectRequest = (projectId: string, projectName: string): MailTemplate => ({
   subject: `Request: Delete Project ${projectName}`,
-  body: `Please delete the entire project folder for project ID: ${projectId} ("${projectName}").`
+  body: `Please delete the entire project folder for project ID: ${projectId} ("${projectName}") and reply with subject "Project Deleted Response" in the following JSON format:
+{
+  "success": true,
+  "message": "Project deleted successfully"
+}
+
+Or if there's an error:
+{
+  "success": false,
+  "error": "Error message here"
+}
+
+Project ID: ${projectId}
+Project Name: ${projectName}`
 });
 
 /**
@@ -101,14 +114,30 @@ export const deleteProjectRequest = (projectId: string, projectName: string): Ma
  */
 export const detachProjectRequest = (projectId: string, projectName: string): MailTemplate => ({
   subject: `Request: Detach Project ${projectName}`,
-  body: `Please detach project ID: ${projectId} ("${projectName}") from this UI. Only remove the .mind-swarm folder.`
+  body: `Please detach project ID: ${projectId} ("${projectName}") from this UI. Only remove the .mind-swarm folder and reply with subject "Project Detached Response" in the following JSON format:
+{
+  "success": true,
+  "message": "Project detached successfully"
+}
+
+Or if there's an error:
+{
+  "success": false,
+  "error": "Error message here"
+}
+
+Project ID: ${projectId}
+Project Name: ${projectName}`
 });
 
 /**
  * Initiate project creation conversation
  */
 export const initiateProjectCreation = (): string => 
-  `I want to work on a new project`;
+  `I want to work on a new project.
+
+Please use the subject "Conversation" for all messages during our project creation dialog.
+When the project is successfully created, use the subject "Project Creation Complete".`;
 
 /**
  * Create project request
