@@ -17,6 +17,10 @@ export declare const listProjectsRequest: () => string;
  */
 export declare const listTasksRequest: (projectId: string) => string;
 /**
+ * Request all tasks across all projects
+ */
+export declare const listAllTasksRequest: () => string;
+/**
  * Request agent list
  */
 export declare const listAgentsRequest: (scope?: {

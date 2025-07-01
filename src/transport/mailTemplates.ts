@@ -46,6 +46,24 @@ export const listTasksRequest = (projectId: string): string => `Please reply wit
 }`;
 
 /**
+ * Request all tasks across all projects
+ */
+export const listAllTasksRequest = (): string => `Please reply with a list of all tasks across all projects in the following JSON format:
+{
+  "tasks": [
+    {
+      "id": "task-uuid",
+      "project_id": "project-uuid",
+      "name": "Task Name",
+      "type": "recurring" | "oneshot",
+      "status": "running" | "pending" | "completed",
+      "progress": 0,
+      "description": "Optional description"
+    }
+  ]
+}`;
+
+/**
  * Request agent list
  */
 export const listAgentsRequest = (scope?: { projectId?: string }): string => {

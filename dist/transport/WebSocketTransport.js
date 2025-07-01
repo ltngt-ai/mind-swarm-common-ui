@@ -3,6 +3,7 @@
  */
 // Use native WebSocket in browser, ws library in Node.js
 let WebSocketImpl;
+let WebSocketImplPromise = null;
 if (typeof window !== 'undefined' && window.WebSocket) {
     // Browser environment
     WebSocketImpl = window.WebSocket;
@@ -117,9 +118,16 @@ export class WebSocketTransport extends BaseTransport {
      */
     async createConnection() {
         const config = this.config;
-        return new Promise(async (resolve, reject) => {
+        this.log(`Connecting to ${config.url}`);
+        // Handle dynamic import for Node.js environment
+        if (typeof window === 'undefined' && !WebSocketImpl) {
+            if (!WebSocketImplPromise) {
+                WebSocketImplPromise = import('ws').then(wsModule => wsModule.default);
+            }
+            WebSocketImpl = await WebSocketImplPromise;
+        }
+        return new Promise((resolve, reject) => {
             try {
-                this.log(`Connecting to ${config.url}`);
                 // Browser WebSocket constructor: new WebSocket(url, protocols)
                 // Node.js ws constructor: new WebSocket(url, protocols, options)
                 if (typeof window !== 'undefined') {
@@ -127,12 +135,7 @@ export class WebSocketTransport extends BaseTransport {
                     this.ws = new WebSocketImpl(config.url, config.protocols);
                 }
                 else {
-                    // Node.js environment - load ws dynamically
-                    if (!WebSocketImpl) {
-                        const wsModule = await import('ws');
-                        WebSocketImpl = wsModule.default;
-                    }
-                    // Can pass options in Node.js
+                    // Node.js environment - Can pass options
                     this.ws = new WebSocketImpl(config.url, config.protocols, {
                         headers: config.headers
                     });

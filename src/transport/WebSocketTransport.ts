@@ -4,6 +4,7 @@
 
 // Use native WebSocket in browser, ws library in Node.js
 let WebSocketImpl: any;
+let WebSocketImplPromise: Promise<any> | null = null;
 
 if (typeof window !== 'undefined' && window.WebSocket) {
   // Browser environment
@@ -156,8 +157,10 @@ export class WebSocketTransport extends BaseTransport {
     
     // Handle dynamic import for Node.js environment
     if (typeof window === 'undefined' && !WebSocketImpl) {
-      const wsModule = await import('ws');
-      WebSocketImpl = wsModule.default;
+      if (!WebSocketImplPromise) {
+        WebSocketImplPromise = import('ws').then(wsModule => wsModule.default);
+      }
+      WebSocketImpl = await WebSocketImplPromise;
     }
     
     return new Promise((resolve, reject) => {

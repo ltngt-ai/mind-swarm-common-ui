@@ -205,8 +205,8 @@ export class ServiceBase {
      * List tasks (optionally filtered by project)
      */
     async listTasks(projectId) {
-        const { listTasksRequest } = await import('../transport/mailTemplates.js');
-        const response = await this.sendToUiAgent('List Tasks', projectId ? listTasksRequest(projectId) : 'Please list all tasks', { expectSubject: 'Task List Response' });
+        const { listTasksRequest, listAllTasksRequest } = await import('../transport/mailTemplates.js');
+        const response = await this.sendToUiAgent(projectId ? `List Tasks for Project: ${projectId}` : 'List All Tasks', projectId ? listTasksRequest(projectId) : listAllTasksRequest(), { expectSubject: 'Task List Response' });
         const data = this.parseResponse(response);
         return data?.tasks || [];
     }
