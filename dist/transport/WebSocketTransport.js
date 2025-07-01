@@ -2,21 +2,16 @@
  * WebSocket Transport Implementation
  */
 // Use native WebSocket in browser, ws library in Node.js
-const WebSocketImpl = (() => {
-    if (typeof window !== 'undefined' && window.WebSocket) {
-        // Browser environment
-        return window.WebSocket;
-    }
-    else {
-        // Node.js environment
-        try {
-            return require('ws');
-        }
-        catch (e) {
-            throw new Error('ws library not available in Node.js environment');
-        }
-    }
-})();
+let WebSocketImpl;
+let WebSocketImplPromise = null;
+if (typeof window !== 'undefined' && window.WebSocket) {
+    // Browser environment
+    WebSocketImpl = window.WebSocket;
+}
+else {
+    // Node.js environment - will be loaded asynchronously
+    WebSocketImpl = null;
+}
 // WebSocket constants (same in both environments)
 const WS_READY_STATE = {
     CONNECTING: 0,
@@ -123,9 +118,16 @@ export class WebSocketTransport extends BaseTransport {
      */
     async createConnection() {
         const config = this.config;
+        this.log(`Connecting to ${config.url}`);
+        // Handle dynamic import for Node.js environment
+        if (typeof window === 'undefined' && !WebSocketImpl) {
+            if (!WebSocketImplPromise) {
+                WebSocketImplPromise = import('ws').then(wsModule => wsModule.default);
+            }
+            WebSocketImpl = await WebSocketImplPromise;
+        }
         return new Promise((resolve, reject) => {
             try {
-                this.log(`Connecting to ${config.url}`);
                 // Browser WebSocket constructor: new WebSocket(url, protocols)
                 // Node.js ws constructor: new WebSocket(url, protocols, options)
                 if (typeof window !== 'undefined') {
@@ -133,7 +135,7 @@ export class WebSocketTransport extends BaseTransport {
                     this.ws = new WebSocketImpl(config.url, config.protocols);
                 }
                 else {
-                    // Node.js environment - can pass options
+                    // Node.js environment - Can pass options
                     this.ws = new WebSocketImpl(config.url, config.protocols, {
                         headers: config.headers
                     });
