@@ -73,6 +73,26 @@ export declare abstract class ServiceBase {
      */
     protected extractError(mail: Mail): string | null;
     /**
+     * List all projects
+     */
+    listProjects(): Promise<any[]>;
+    /**
+     * Create a new project
+     */
+    createProject(name: string, description?: string): Promise<any>;
+    /**
+     * Delete a project
+     */
+    deleteProject(projectId: string, projectName: string): Promise<boolean>;
+    /**
+     * List agents (optionally filtered by project)
+     */
+    listAgents(projectId?: string): Promise<any[]>;
+    /**
+     * List tasks (optionally filtered by project)
+     */
+    listTasks(projectId?: string): Promise<any[]>;
+    /**
      * Get UI agent email
      */
     getUiAgentEmail(): string;
