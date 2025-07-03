@@ -1,8 +1,8 @@
 /**
- * Email constants and timeouts for MindSwarm communication
+ * Email constants and timeouts for Mind-Swarm communication
  */
-export declare const DEFAULT_UI_AGENT_EMAIL = "ui-agent@ui_agents.local.mind-swarm.ltngt.ai";
-export declare const USER_EMAIL_DOMAIN = "external.local.mind-swarm.ltngt.ai";
+export declare const DEFAULT_UI_AGENT_EMAIL = "ui-agent@ui_agents.local.mind_swarm.ltngt.ai";
+export declare const USER_EMAIL_DOMAIN = "external.local.mind_swarm.ltngt.ai";
 export declare const UI_AGENT_EMAIL_DOMAIN = "ui-agents.ltngt.ai";
 export declare const BASE_DOMAIN = "ltngt.ai";
 export declare const UI_OPERATION_TIMEOUT_MS = 180000;

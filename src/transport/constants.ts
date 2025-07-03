@@ -1,14 +1,14 @@
 /**
- * Email constants and timeouts for MindSwarm communication
+ * Email constants and timeouts for Mind-Swarm communication
  */
 
 // Default UI agent email - this will be replaced by the user's specific UI agent
 // email once the identity is confirmed by the backend
 export const DEFAULT_UI_AGENT_EMAIL =
-  "ui-agent@ui_agents.local.mind-swarm.ltngt.ai";
+  "ui-agent@ui_agents.local.mind_swarm.ltngt.ai";
 
 // Email domain for user accounts
-export const USER_EMAIL_DOMAIN = "external.local.mind-swarm.ltngt.ai";
+export const USER_EMAIL_DOMAIN = "external.local.mind_swarm.ltngt.ai";
 
 // Email domain for UI agents
 export const UI_AGENT_EMAIL_DOMAIN = "ui-agents.ltngt.ai";

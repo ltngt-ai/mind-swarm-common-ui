@@ -1,5 +1,5 @@
 /**
- * Parse MindSwarm UI Protocol from markdown messages
+ * Parse Mind-Swarm UI Protocol from markdown messages
  * 
  * Detects and extracts UI elements from ```mind-swarm:ui code blocks
  */

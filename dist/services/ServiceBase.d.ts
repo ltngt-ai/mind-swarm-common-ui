@@ -92,7 +92,7 @@ export declare abstract class ServiceBase {
      */
     deleteProject(projectId: string, projectName: string): Promise<boolean>;
     /**
-     * Detach a project (removes .mind-swarm folder only)
+     * Detach a project (removes .mind_swarm folder only)
      */
     detachProject(projectId: string, projectName: string): Promise<boolean>;
     /**
