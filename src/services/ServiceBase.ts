@@ -276,7 +276,7 @@ export abstract class ServiceBase {
   }
 
   /**
-   * Detach a project (removes .mind-swarm folder only)
+   * Detach a project (removes .mind_swarm folder only)
    */
   async detachProject(projectId: string, projectName: string): Promise<boolean> {
     const { detachProjectRequest } = await import('../transport/mailTemplates.js');

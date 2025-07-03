@@ -62,4 +62,12 @@ export declare const chatMessage: (message: string) => string;
  * Request status update
  */
 export declare const statusUpdateRequest: (entityType: string, entityId: string) => string;
+/**
+ * Create agent request
+ */
+export declare const createAgentRequest: (agentType: string) => string;
+/**
+ * List agent types request
+ */
+export declare const listAgentTypesRequest: () => string;
 //# sourceMappingURL=mailTemplates.d.ts.map

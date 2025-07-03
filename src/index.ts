@@ -1,7 +1,7 @@
 /**
  * @mind-swarm/common-ui
  * 
- * Shared utilities and transport layer for MindSwarm CLI and Web UI
+ * Shared utilities and transport layer for Mind-Swarm CLI and Web UI
  */
 
 export * from './types/index.js';

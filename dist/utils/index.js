@@ -1,5 +1,5 @@
 /**
- * Shared utilities for MindSwarm
+ * Shared utilities for Mind-Swarm
  */
 export * from './rfc2822.js';
 export * from './parseMarkdownJson.js';

@@ -1,5 +1,5 @@
 /**
- * Shared types for MindSwarm CLI and Web UI
+ * Shared types for Mind-Swarm CLI and Web UI
  */
 
 export * from './entities.js';

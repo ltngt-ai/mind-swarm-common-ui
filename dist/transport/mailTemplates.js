@@ -102,7 +102,7 @@ Project Name: ${projectName}`
  */
 export const detachProjectRequest = (projectId, projectName) => ({
     subject: `Request: Detach Project ${projectName}`,
-    body: `Please detach project ID: ${projectId} ("${projectName}") from this UI. Only remove the .mind-swarm folder and reply with subject "Project Detached Response" in the following JSON format:
+    body: `Please detach project ID: ${projectId} ("${projectName}") from this UI. Only remove the .mind_swarm folder and reply with subject "Project Detached Response" in the following JSON format:
 {
   "success": true,
   "message": "Project detached successfully"
@@ -120,7 +120,7 @@ Project Name: ${projectName}`
 /**
  * Initiate project creation conversation
  */
-export const initiateProjectCreation = () => `I want to work on a new project.
+export const initiateProjectCreation = () => `I want to work to create a project.
 
 Please use the subject "Conversation" for all messages during our project creation dialog.
 When the project is successfully created, use the subject "Project Creation Complete".`;
@@ -168,4 +168,19 @@ export const statusUpdateRequest = (entityType, entityId) => `Please reply with 
     "details": {}
   }
 }`;
+/**
+ * Create agent request
+ */
+export const createAgentRequest = (agentType) => `Please create a new agent of Agent Type: ${agentType}
+Please reply with subject: Agent Created and body with agent details in the following JSON format:
+{
+  "success": true,
+  "agent_id": "agent_id",
+  "message": "${agentType} agent created"
+}`;
+/**
+ * List agent types request
+ */
+export const listAgentTypesRequest = () => `Please list all available agent types
+Please reply with subject: Agent Types List`;
 //# sourceMappingURL=mailTemplates.js.map

@@ -1,10 +1,10 @@
 # @mind-swarm/common-ui
 
-Shared utilities and transport layer for MindSwarm CLI and Web UI applications.
+Shared utilities and transport layer for Mind-Swarm CLI and Web UI applications.
 
 ## Overview
 
-This package provides common functionality shared between the MindSwarm web and CLI interfaces:
+This package provides common functionality shared between the Mind-Swarm web and CLI interfaces:
 
 - **Mail Transport Protocol**: RFC2822-based communication with backend agents
 - **Type Definitions**: Shared TypeScript interfaces for entities, mail, auth, and UI
