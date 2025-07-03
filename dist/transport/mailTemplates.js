@@ -171,9 +171,13 @@ export const statusUpdateRequest = (entityType, entityId) => `Please reply with 
 /**
  * Create agent request
  */
-export const createAgentRequest = (agentType) => `Please create a new agent
-Agent Type: ${agentType}
-Please reply with subject: Agent Created`;
+export const createAgentRequest = (agentType) => `Please create a new agent of Agent Type: ${agentType}
+Please reply with subject: Agent Created and body with agent details in the following JSON format:
+{
+  "success": true,
+  "agent_id": "agent_id",
+  "message": "${agentType} agent created"
+}`;
 /**
  * List agent types request
  */
