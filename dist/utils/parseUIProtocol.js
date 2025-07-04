@@ -43,6 +43,12 @@ export function parseUIProtocol(message) {
         jsonContent = jsonContent.replace(/,(\s*[}\]])/g, '$1');
         // 2. Fix escaped single quotes (should not be escaped in JSON)
         jsonContent = jsonContent.replace(/\\'/g, "'");
+        // 3. Fix stray backslashes before quotes (common in malformed JSON)
+        // This handles cases like: "label": "text",\      "action": "..."
+        jsonContent = jsonContent.replace(/,\s*\\\s*"/g, ', "');
+        // 4. Fix any remaining stray backslashes that aren't part of escape sequences
+        // Negative lookbehind to avoid breaking valid escapes like \n, \t, \", etc.
+        jsonContent = jsonContent.replace(/\\(?!["\\/bfnrtu])/g, '');
         try {
             const element = JSON.parse(jsonContent);
             // Validate that it's a valid UI element
