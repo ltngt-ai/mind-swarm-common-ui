@@ -97,6 +97,14 @@ export function parseUIProtocol(message: string): ParsedMessage {
     // 2. Fix escaped single quotes (should not be escaped in JSON)
     jsonContent = jsonContent.replace(/\\'/g, "'");
     
+    // 3. Fix stray backslashes before quotes (e.g., ,\ " -> , ")
+    jsonContent = jsonContent.replace(/,\s*\\\s*"/g, ', "');
+    
+    // 4. Remove stray backslashes that aren't valid escape sequences
+    // This regex keeps valid JSON escapes (\\, \", \/, \b, \f, \n, \r, \t, \uXXXX)
+    // but removes other stray backslashes
+    jsonContent = jsonContent.replace(/\\(?!["\\/bfnrtu])/g, '');
+    
     try {
       const element = JSON.parse(jsonContent);
       
