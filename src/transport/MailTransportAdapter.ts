@@ -43,8 +43,26 @@ export class MailTransportAdapter extends WebSocketTransport implements IMailTra
    * Send mail and wait for response
    */
   async sendMail(mail: Mail): Promise<Mail> {
+    this.log('MailTransportAdapter.sendMail called');
+    
     // Debug log the incoming mail
     this.log(`sendMail called with subject: "${mail.subject}", to: ${mail.to_address}`);
+    
+    // Check if we're connected and have sent identity
+    const ws = (this as any).ws;
+    this.log('WebSocket info:', { 
+      hasWs: !!ws, 
+      readyState: ws?.readyState,
+      userEmail: this.userEmail,
+      uiAgentEmail: this.uiAgentEmail
+    });
+    
+    this.log(`WebSocket state: readyState=${ws?.readyState}, userEmail=${this.userEmail}, uiAgentEmail=${this.uiAgentEmail}`);
+    
+    if (!ws || ws.readyState !== 1) {
+      this.logError('WebSocket not ready:', { hasWs: !!ws, readyState: ws?.readyState });
+      throw new Error('WebSocket not connected');
+    }
     
     // Server expects this exact format
     const message = {
@@ -60,13 +78,16 @@ export class MailTransportAdapter extends WebSocketTransport implements IMailTra
       }
     };
 
-    // Send directly via WebSocket
-    const ws = (this as any).ws;
-    if (ws && ws.readyState === 1) {
-      this.log(`Sending mail message: ${JSON.stringify(message)}`);
+    this.log('About to send mail message via WebSocket');
+    this.log(`Sending mail message: ${JSON.stringify(message)}`);
+    
+    try {
       ws.send(JSON.stringify(message));
-    } else {
-      throw new Error('WebSocket not connected');
+      this.log('WebSocket send() completed');
+      this.log('Mail message sent successfully');
+    } catch (error) {
+      this.logError('WebSocket send() failed:', error);
+      throw error;
     }
     
     // For now, return the original mail (we'll handle responses later)
@@ -121,6 +142,7 @@ export class MailTransportAdapter extends WebSocketTransport implements IMailTra
    */
   private handleMailMessage(message: any): void {
     this.log(`Received message type: ${message.type}`);
+    this.log('[MailTransportAdapter] Received message:', JSON.stringify(message).substring(0, 200));
     
     // Check if this is a mail message
     if (message.type === 'mail' && message.mail) {
@@ -139,10 +161,11 @@ export class MailTransportAdapter extends WebSocketTransport implements IMailTra
         headers: {}
       };
       this.log(`Emitting mail notification from ${mail.from_address}: ${mail.subject}`);
+      this.log('[MailTransportAdapter] Emitting mail:', mail);
       this.emitMail(mail);
     } else if (message.type === 'mail_sent') {
       // Handle mail sent confirmation - just log it
-      this.log(`Mail sent confirmation: ${message.status?.status}`);
+      this.log(`Mail sent confirmation: ${message.status || JSON.stringify(message)}`);
     } else if (message.type === 'identity_confirmed') {
       // Update user identity
       if (message.email_address) {
@@ -153,6 +176,11 @@ export class MailTransportAdapter extends WebSocketTransport implements IMailTra
       if (message.ui_agent_email) {
         this.uiAgentEmail = message.ui_agent_email;
         this.log(`UI Agent: ${this.uiAgentEmail}`);
+      }
+      // Also check for user_agent_email (new field name for M-Brain user agents)
+      if (message.user_agent_email) {
+        this.uiAgentEmail = message.user_agent_email;
+        this.log(`User Agent: ${this.uiAgentEmail}`);
       }
     } else {
       this.log(`Unhandled message: ${JSON.stringify(message).substring(0, 200)}`);
@@ -209,6 +237,8 @@ export class MailTransportAdapter extends WebSocketTransport implements IMailTra
       headers?: Record<string, string>;
     }
   ): Promise<Mail> {
+    this.log('MailTransportAdapter.sendMailTo called:', { to, subject, body });
+    
     const mail: Mail = {
       message_id: this.generateId(),
       from_address: this.defaultFrom,
